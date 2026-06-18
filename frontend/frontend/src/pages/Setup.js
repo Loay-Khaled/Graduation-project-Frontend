@@ -18,6 +18,24 @@ const inputBlurStyle = {
   boxShadow: "none",
 };
 
+const FieldInput = ({ icon: Icon, type, name, value, placeholder, required, onChange }) => (
+  <div className="relative">
+    <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      required={required}
+      placeholder={placeholder}
+      className="w-full pl-10 pr-4 py-3 rounded-xl text-white text-sm placeholder-slate-600 outline-none transition-all"
+      style={inputStyle}
+      onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+      onBlur={(e) => Object.assign(e.target.style, inputBlurStyle)}
+    />
+  </div>
+);
+
 const Setup = () => {
   const navigate = useNavigate();
   const { setupAdmin } = useAuth();
@@ -85,24 +103,6 @@ const Setup = () => {
     if (result.success) navigate("/");
     else setError(result.error || "Setup failed. Please try again.");
   };
-
-  const FieldInput = ({ icon: Icon, type, name, value, placeholder, required }) => (
-    <div className="relative">
-      <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={handleChange}
-        required={required}
-        placeholder={placeholder}
-        className="w-full pl-10 pr-4 py-3 rounded-xl text-white text-sm placeholder-slate-600 outline-none transition-all"
-        style={inputStyle}
-        onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
-        onBlur={(e) => Object.assign(e.target.style, inputBlurStyle)}
-      />
-    </div>
-  );
 
   return (
     <div
@@ -209,11 +209,11 @@ const Setup = () => {
                 >
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Username</label>
-                    <FieldInput icon={FiUser} type="text" name="username" value={formData.username} placeholder="Choose a username" required />
+                    <FieldInput icon={FiUser} type="text" name="username" value={formData.username} placeholder="Choose a username" required onChange={handleChange} />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Email Address</label>
-                    <FieldInput icon={FiMail} type="email" name="email" value={formData.email} placeholder="your.email@example.com" required />
+                    <FieldInput icon={FiMail} type="email" name="email" value={formData.email} placeholder="your.email@example.com" required onChange={handleChange} />
                   </div>
                   <motion.button
                     type="button"
@@ -239,11 +239,11 @@ const Setup = () => {
                 >
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Password</label>
-                    <FieldInput icon={FiLock} type="password" name="password" value={formData.password} placeholder="Create a strong password" required />
+                    <FieldInput icon={FiLock} type="password" name="password" value={formData.password} placeholder="Create a strong password" required onChange={handleChange} />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Confirm Password</label>
-                    <FieldInput icon={FiLock} type="password" name="confirmPassword" value={formData.confirmPassword} placeholder="Confirm your password" required />
+                    <FieldInput icon={FiLock} type="password" name="confirmPassword" value={formData.confirmPassword} placeholder="Confirm your password" required onChange={handleChange} />
                   </div>
 
                   {/* Ethical Agreement */}
