@@ -1,8 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiUser, FiLock, FiMail, FiAlertCircle, FiCheck } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiUser, FiLock, FiMail, FiAlertCircle, FiWifi } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import LoadingSpinner from "../components/LoadingSpinner";
+
+const inputStyle = {
+  background: "rgba(7,9,15,0.8)",
+  border: "1px solid rgba(255,255,255,0.06)",
+};
+const inputFocusStyle = {
+  border: "1px solid rgba(0,212,255,0.4)",
+  boxShadow: "0 0 0 3px rgba(0,212,255,0.06)",
+};
+const inputBlurStyle = {
+  border: "1px solid rgba(255,255,255,0.06)",
+  boxShadow: "none",
+};
 
 const Setup = () => {
   const navigate = useNavigate();
@@ -15,17 +29,13 @@ const Setup = () => {
     confirmPassword: "",
     agreeTerms: false,
   });
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState(1);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
     setError("");
   };
 
@@ -58,230 +68,256 @@ const Setup = () => {
   };
 
   const handleNext = () => {
-    if (step === 1 && validateStep1()) {
-      setStep(2);
-    }
+    if (step === 1 && validateStep1()) setStep(2);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateStep2()) return;
-
     setLoading(true);
     setError("");
-
     const result = await setupAdmin({
       username: formData.username,
       email: formData.email,
       password: formData.password,
     });
-
     setLoading(false);
-
-    if (result.success) {
-      navigate("/");
-    } else {
-      setError(result.error || "Setup failed. Please try again.");
-    }
+    if (result.success) navigate("/");
+    else setError(result.error || "Setup failed. Please try again.");
   };
 
+  const FieldInput = ({ icon: Icon, type, name, value, placeholder, required }) => (
+    <div className="relative">
+      <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={handleChange}
+        required={required}
+        placeholder={placeholder}
+        className="w-full pl-10 pr-4 py-3 rounded-xl text-white text-sm placeholder-slate-600 outline-none transition-all"
+        style={inputStyle}
+        onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+        onBlur={(e) => Object.assign(e.target.style, inputBlurStyle)}
+      />
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-dark-300 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-3xl">W</span>
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{ background: "#07090f" }}
+    >
+      {/* Grid background */}
+      <div
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0,212,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.06) 1px, transparent 1px)`,
+          backgroundSize: "40px 40px",
+        }}
+      />
+      <div
+        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{
+          top: "20%",
+          right: "-15%",
+          background: "radial-gradient(circle, rgba(167,139,250,0.06) 0%, transparent 70%)",
+          filter: "blur(40px)",
+        }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-lg relative z-10"
+      >
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <div
+            className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg, rgba(0,212,255,0.15), rgba(167,139,250,0.15))",
+              border: "1px solid rgba(0,212,255,0.2)",
+            }}
+          >
+            <FiWifi className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            First-Time Setup
-          </h1>
-          <p className="text-gray-400">Create your administrator account</p>
+          <h1 className="text-2xl font-bold text-white">First-Time Setup</h1>
+          <p className="text-sm text-slate-500 mt-1">Create your administrator account</p>
         </div>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center space-x-4">
-            <div
-              className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 1 ? "bg-primary" : "bg-gray-700"}`}
-            >
-              <span className="text-white font-semibold">1</span>
-            </div>
-            <div
-              className={`w-16 h-1 ${step >= 2 ? "bg-primary" : "bg-gray-700"}`}
-            ></div>
-            <div
-              className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 2 ? "bg-primary" : "bg-gray-700"}`}
-            >
-              <span className="text-white font-semibold">2</span>
-            </div>
-          </div>
+        {/* Progress steps */}
+        <div className="flex items-center justify-center mb-6 space-x-3">
+          {[1, 2].map((s) => (
+            <React.Fragment key={s}>
+              <motion.div
+                animate={{
+                  background: step >= s ? "linear-gradient(135deg, #00d4ff, #a78bfa)" : "rgba(255,255,255,0.05)",
+                  border: step >= s ? "1px solid rgba(0,212,255,0.4)" : "1px solid rgba(255,255,255,0.08)",
+                }}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold"
+                style={{ color: step >= s ? "#fff" : "#475569" }}
+              >
+                {s}
+              </motion.div>
+              {s < 2 && (
+                <div className="flex-1 h-px max-w-[60px]" style={{
+                  background: step >= 2 ? "rgba(0,212,255,0.4)" : "rgba(255,255,255,0.06)"
+                }} />
+              )}
+            </React.Fragment>
+          ))}
         </div>
 
-        {/* Form Card */}
-        <div className="bg-dark-200 border border-gray-700 rounded-xl shadow-2xl p-8">
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 bg-red-900/30 border border-red-500 rounded-lg p-3 flex items-center space-x-2">
-              <FiAlertCircle className="text-red-500 w-5 h-5" />
-              <p className="text-red-400 text-sm">{error}</p>
-            </div>
-          )}
+        {/* Card */}
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: "rgba(13,17,26,0.9)",
+            border: "1px solid rgba(0,212,255,0.1)",
+            boxShadow: "0 0 60px rgba(0,212,255,0.04), 0 30px 80px rgba(0,0,0,0.5)",
+          }}
+        >
+          <div className="h-px w-full" style={{ background: "linear-gradient(90deg, transparent, rgba(0,212,255,0.5), rgba(167,139,250,0.5), transparent)" }} />
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Step 1: Basic Info */}
-            {step === 1 && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Username
-                  </label>
-                  <div className="relative">
-                    <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleChange}
-                      required
-                      className="w-full pl-10 pr-4 py-3 bg-dark-300 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-                      placeholder="Choose a username"
-                    />
-                  </div>
-                </div>
+          <form onSubmit={handleSubmit} className="p-8 space-y-4">
+            {/* Error */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="flex items-center space-x-2 px-4 py-3 rounded-xl"
+                style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)" }}
+              >
+                <FiAlertCircle className="text-danger w-4 h-4 flex-shrink-0" />
+                <p className="text-danger text-sm">{error}</p>
+              </motion.div>
+            )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className="w-full pl-10 pr-4 py-3 bg-dark-300 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-                      placeholder="your.email@example.com"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="w-full bg-gradient-to-r from-primary to-secondary hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 rounded-lg transition-all duration-200"
+            <AnimatePresence mode="wait">
+              {step === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.25 }}
+                  className="space-y-4"
                 >
-                  Next Step
-                </button>
-              </>
-            )}
-
-            {/* Step 2: Password & Agreement */}
-            {step === 2 && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                      className="w-full pl-10 pr-4 py-3 bg-dark-300 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-                      placeholder="Create a strong password"
-                    />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Username</label>
+                    <FieldInput icon={FiUser} type="text" name="username" value={formData.username} placeholder="Choose a username" required />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      required
-                      className="w-full pl-10 pr-4 py-3 bg-dark-300 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-                      placeholder="Confirm your password"
-                    />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Email Address</label>
+                    <FieldInput icon={FiMail} type="email" name="email" value={formData.email} placeholder="your.email@example.com" required />
                   </div>
-                </div>
-
-                {/* Ethical Agreement */}
-                <div className="bg-yellow-900/20 border border-yellow-500 rounded-lg p-4">
-                  <h3 className="text-yellow-400 font-semibold mb-2 flex items-center">
-                    <FiAlertCircle className="mr-2" />
-                    Ethical Guidelines
-                  </h3>
-                  <ul className="text-sm text-gray-300 space-y-1 mb-3">
-                    <li>• Only test networks with explicit authorization</li>
-                    <li>• Use exclusively in controlled lab environments</li>
-                    <li>• Record consent before any security testing</li>
-                    <li>• Comply with all applicable laws and regulations</li>
-                    <li>• Unauthorized access is illegal and punishable</li>
-                  </ul>
-                  <label className="flex items-start">
-                    <input
-                      type="checkbox"
-                      name="agreeTerms"
-                      checked={formData.agreeTerms}
-                      onChange={handleChange}
-                      className="mt-1 w-4 h-4 text-primary bg-dark-300 border-gray-600 rounded focus:ring-primary"
-                    />
-                    <span className="ml-2 text-sm text-gray-300">
-                      I understand and agree to follow these ethical guidelines
-                    </span>
-                  </label>
-                </div>
-
-                <div className="flex space-x-3">
-                  <button
+                  <motion.button
                     type="button"
-                    onClick={() => setStep(1)}
-                    className="flex-1 bg-dark-100 hover:bg-dark-300 text-white font-semibold py-3 rounded-lg transition-all"
+                    onClick={handleNext}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-3 rounded-xl font-semibold text-sm text-white"
+                    style={{ background: "linear-gradient(135deg, #00d4ff, #6366f1)", boxShadow: "0 0 25px rgba(0,212,255,0.2)" }}
                   >
-                    Back
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    Next Step →
+                  </motion.button>
+                </motion.div>
+              )}
+
+              {step === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.25 }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Password</label>
+                    <FieldInput icon={FiLock} type="password" name="password" value={formData.password} placeholder="Create a strong password" required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Confirm Password</label>
+                    <FieldInput icon={FiLock} type="password" name="confirmPassword" value={formData.confirmPassword} placeholder="Confirm your password" required />
+                  </div>
+
+                  {/* Ethical Agreement */}
+                  <div
+                    className="rounded-xl p-4 space-y-3"
+                    style={{ background: "rgba(251,191,36,0.05)", border: "1px solid rgba(251,191,36,0.2)" }}
                   >
-                    {loading ? <LoadingSpinner size="sm" /> : "Complete Setup"}
-                  </button>
-                </div>
-              </>
-            )}
+                    <div className="flex items-center space-x-2">
+                      <FiAlertCircle className="w-4 h-4 text-warning" />
+                      <h3 className="text-warning text-sm font-semibold">Ethical Guidelines</h3>
+                    </div>
+                    <ul className="text-xs text-slate-400 space-y-1 font-mono">
+                      <li>• Only test networks with explicit authorization</li>
+                      <li>• Use exclusively in controlled lab environments</li>
+                      <li>• Record consent before any security testing</li>
+                      <li>• Comply with all applicable laws and regulations</li>
+                      <li>• Unauthorized access is illegal and punishable</li>
+                    </ul>
+                    <label className="flex items-start space-x-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="agreeTerms"
+                        checked={formData.agreeTerms}
+                        onChange={handleChange}
+                        className="mt-0.5 w-4 h-4 rounded accent-primary"
+                      />
+                      <span className="text-xs text-slate-300">
+                        I understand and agree to follow these ethical guidelines
+                      </span>
+                    </label>
+                  </div>
+
+                  <div className="flex space-x-3 pt-1">
+                    <motion.button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-1 py-3 rounded-xl font-semibold text-sm text-slate-300"
+                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+                    >
+                      ← Back
+                    </motion.button>
+                    <motion.button
+                      type="submit"
+                      disabled={loading}
+                      whileHover={{ scale: loading ? 1 : 1.02 }}
+                      whileTap={{ scale: loading ? 1 : 0.98 }}
+                      className="flex-1 py-3 rounded-xl font-semibold text-sm text-white flex items-center justify-center disabled:opacity-50"
+                      style={{ background: "linear-gradient(135deg, #00d4ff, #6366f1)", boxShadow: "0 0 25px rgba(0,212,255,0.2)" }}
+                    >
+                      {loading ? <LoadingSpinner size="sm" /> : "Complete Setup"}
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </form>
         </div>
 
-        {/* Navigation to Login */}
-        <div className="text-center mt-6">
-          <p className="text-gray-400 text-sm mb-3">Already have an account?</p>
+        <div className="text-center mt-5 space-y-2">
+          <p className="text-xs text-slate-600">Already have an account?</p>
           <button
             onClick={() => navigate("/login")}
-            className="px-6 py-2 bg-dark-200 hover:bg-dark-100 border border-gray-600 hover:border-gray-500 text-white rounded-lg transition-all duration-200"
+            className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
           >
-            Go to Login
+            Go to Login →
           </button>
         </div>
 
-        {/* Footer */}
-        <div className="text-center mt-6 text-sm text-gray-400">
-          <p>AAST - Department of Computer Engineering</p>
-        </div>
-      </div>
+        <p className="text-center text-[10px] text-slate-700 font-mono mt-4">
+          AAST — Computer Engineering
+        </p>
+      </motion.div>
     </div>
   );
 };
