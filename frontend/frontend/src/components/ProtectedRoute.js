@@ -1,0 +1,32 @@
+// TEMPORARILY DISABLED FOR FRONTEND TESTING
+// Uncomment the imports below and remove the direct return to re-enable authentication
+// import React from "react";
+// import { Navigate } from "react-router-dom";
+// import { useAuth } from "../context/AuthContext";
+// import LoadingSpinner from "../components/LoadingSpinner";
+
+const ProtectedRoute = ({ children }) => {
+  // TEMPORARILY DISABLED FOR FRONTEND TESTING
+  // Remove this to re-enable authentication
+  return children;
+
+  /* Authentication logic (currently disabled):
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dark-300 flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Loading..." />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+  */
+};
+
+export default ProtectedRoute;
